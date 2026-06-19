@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Secrets / env
+.env
+*.local
+
+# NOTE: data/screener.db and data/alert_state.json are intentionally TRACKED.
+# The accumulated price history is the project's asset and is committed back
+# each CI run (git-scraper pattern). Local scratch DBs are ignored:
+data/test.db
+data/*.tmp.db
+
+# Build output (dashboard is generated, published to Pages branch)
+site/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,35 @@
+# CS2 Skin Screener configuration
+# -------------------------------------------------------------------
+# Steam Community Market currency code. 1 = USD.
+currency: 1
+appid: 730            # CS2 / CS:GO app id on Steam
+
+# Which price source to poll. Pluggable: "steam" (free, no key) for now.
+# Later: "pricempire" / "csfloat" for cross-market + float data.
+fetcher: steam
+
+# Seconds to wait between item requests. Steam rate-limits aggressively;
+# keep this >= 3s to avoid 429s. ~200 items at 3.5s ≈ 12 min per run.
+poll_delay_seconds: 3.5
+
+# Signal thresholds (tune freely).
+signals:
+  history_window_days: 30      # lookback for the "vs average" baseline
+  min_history_points: 8        # don't fire vs-avg signal until we have this many samples
+  price_below_avg_pct: 12.0    # flag BUY when price is >= this % below its window avg
+  price_above_avg_pct: 25.0    # flag SELL/overheated when >= this % above window avg
+  volume_spike_multiple: 3.0   # flag when 24h volume >= this x the window-median volume
+
+# Items to watch. Use EXACT Steam market_hash_name strings.
+# A small starter set spanning cases (supply plays) + liquid skins.
+watchlist:
+  - "Snakebite Case"
+  - "Fracture Case"
+  - "Dreams & Nightmares Case"
+  - "Recoil Case"
+  - "Kilowatt Case"
+  - "AK-47 | Redline (Field-Tested)"
+  - "AWP | Asiimov (Field-Tested)"
+  - "USP-S | Kill Confirmed (Minimal Wear)"
+  - "M4A4 | Asiimov (Field-Tested)"
+  - "Desert Eagle | Blaze (Factory New)"
