@@ -37,6 +37,7 @@ def main(argv: list[str] | None = None) -> int:
         price_below_avg_pct=sc.get("price_below_avg_pct", 12.0),
         price_above_avg_pct=sc.get("price_above_avg_pct", 25.0),
         volume_spike_multiple=sc.get("volume_spike_multiple", 3.0),
+        primary_price_source=sc.get("primary_price_source", "csfloat"),
     )
 
     storage = Storage(DB_PATH)

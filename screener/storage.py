@@ -78,9 +78,17 @@ class Storage:
         self.conn.commit()
 
     # -- reads --------------------------------------------------------------
-    def history(self, market_hash_name: str, since_days: Optional[int] = None) -> list[sqlite3.Row]:
+    def history(
+        self,
+        market_hash_name: str,
+        since_days: Optional[int] = None,
+        source: Optional[str] = None,
+    ) -> list[sqlite3.Row]:
         q = "SELECT * FROM price_history WHERE market_hash_name = ?"
         params: list = [market_hash_name]
+        if source is not None:
+            q += " AND source = ?"
+            params.append(source)
         if since_days is not None:
             cutoff = (datetime.now(timezone.utc) - timedelta(days=since_days)).isoformat(timespec="seconds")
             q += " AND ts >= ?"
@@ -88,11 +96,25 @@ class Storage:
         q += " ORDER BY ts ASC"
         return self.conn.execute(q, params).fetchall()
 
-    def latest(self, market_hash_name: str) -> Optional[sqlite3.Row]:
-        return self.conn.execute(
-            "SELECT * FROM price_history WHERE market_hash_name = ? ORDER BY ts DESC LIMIT 1",
+    def latest(self, market_hash_name: str, source: Optional[str] = None) -> Optional[sqlite3.Row]:
+        q = "SELECT * FROM price_history WHERE market_hash_name = ?"
+        params: list = [market_hash_name]
+        if source is not None:
+            q += " AND source = ?"
+            params.append(source)
+        q += " ORDER BY ts DESC LIMIT 1"
+        return self.conn.execute(q, params).fetchone()
+
+    def latest_per_source(self, market_hash_name: str) -> dict[str, sqlite3.Row]:
+        """Most-recent row for each source that has data for this item."""
+        rows = self.conn.execute(
+            "SELECT * FROM price_history WHERE market_hash_name = ? ORDER BY ts ASC",
             (market_hash_name,),
-        ).fetchone()
+        ).fetchall()
+        out: dict[str, sqlite3.Row] = {}
+        for r in rows:  # ASC, so last write per source wins
+            out[r["source"]] = r
+        return out
 
     def all_items(self) -> list[str]:
         rows = self.conn.execute("SELECT market_hash_name FROM items ORDER BY market_hash_name").fetchall()

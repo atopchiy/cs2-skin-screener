@@ -4,13 +4,20 @@
 currency: 1
 appid: 730            # CS2 / CS:GO app id on Steam
 
-# Which price source to poll. Pluggable: "steam" (free, no key) for now.
-# Later: "pricempire" / "csfloat" for cross-market + float data.
-fetcher: steam
-
-# Seconds to wait between item requests. Steam rate-limits aggressively;
-# keep this >= 3s to avoid 429s. ~200 items at 3.5s ≈ 12 min per run.
-poll_delay_seconds: 3.5
+# Price sources to poll each run. Each enabled source records its own price
+# history per item (storage is source-tagged).
+#   steam    - free, no key. Kept for 24h units-sold VOLUME (best free liquidity feed).
+#   skinport - free, no key. Cash market; bulk endpoint (all items in one call).
+#   csfloat  - PRIMARY buy market. Needs CSFLOAT_API_KEY env. Per-item, rate-limited.
+sources:
+  steam:
+    enabled: true
+    poll_delay_seconds: 3.5    # Steam rate-limits hard; keep >= 3s
+  skinport:
+    enabled: true              # one bulk call, no per-item delay
+  csfloat:
+    enabled: true              # needs CSFLOAT_API_KEY; skipped automatically if unset
+    poll_delay_seconds: 1.2    # per-item; be polite to the rate limiter
 
 # Signal thresholds (tune freely).
 signals:
@@ -19,6 +26,14 @@ signals:
   price_below_avg_pct: 12.0    # flag BUY when price is >= this % below its window avg
   price_above_avg_pct: 25.0    # flag SELL/overheated when >= this % above window avg
   volume_spike_multiple: 3.0   # flag when 24h volume >= this x the window-median volume
+  primary_price_source: csfloat  # vs-history anchors on the market you actually buy on
+  volume_source: steam           # where 24h units-sold comes from
+  arbitrage:
+    buy_source: csfloat
+    sell_source: skinport
+    sell_fee_pct: 12.0           # Skinport sell-side cut (~12%)
+    min_net_margin_pct: 5.0      # flag ARBITRAGE at/above this margin AFTER fees
+    min_abs_profit_usd: 1.0      # AND at/above this $ profit — kills penny spreads on cheap cases
 
 # Items to watch. Use EXACT Steam market_hash_name strings.
 # All entries below validated against live Steam (returns price data).

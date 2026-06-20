@@ -75,14 +75,16 @@ def backtest(
     cfg: SignalConfig,
     watchlist: list[str],
     horizons_days: tuple[float, ...] = (7, 14, 30),
+    source: Optional[str] = None,
 ) -> dict:
     # flag -> horizon -> HorizonStats
     stats: dict[str, dict[float, HorizonStats]] = {
         flag: {h: HorizonStats(h) for h in horizons_days} for flag in _DIRECTION
     }
+    source = source or cfg.primary_price_source
 
     for name in watchlist:
-        full = storage.history(name)  # entire history, ASC
+        full = storage.history(name, source=source)  # one source, ASC
         if len(full) < cfg.min_history_points + 1:
             continue
 
@@ -121,6 +123,7 @@ def backtest(
 
     return {
         "config": {
+            "source": source,
             "history_window_days": cfg.history_window_days,
             "min_history_points": cfg.min_history_points,
             "horizons_days": list(horizons_days),

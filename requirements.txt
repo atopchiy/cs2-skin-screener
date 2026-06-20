@@ -1,2 +1,3 @@
 requests>=2.31
 PyYAML>=6.0
+brotli>=1.1          # Skinport API only serves Brotli-encoded responses

@@ -38,6 +38,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CSFLOAT_API_KEY: ${{ secrets.CSFLOAT_API_KEY }}
         run: python run.py
 
       - name: Commit updated history
